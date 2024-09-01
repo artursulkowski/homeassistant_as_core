@@ -1,14 +1,22 @@
 """DataUpdateCoordinator for the Forecast.Solar integration."""
 
 from __future__ import annotations
+import logging
+import json
 
 from datetime import timedelta
+
 
 from forecast_solar import Estimate, ForecastSolar
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_LATITUDE, CONF_LONGITUDE
-from homeassistant.core import HomeAssistant
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+    ServiceResponse,
+    SupportsResponse,
+)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -22,6 +30,9 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
@@ -66,3 +77,14 @@ class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
     async def _async_update_data(self) -> Estimate:
         """Fetch Forecast.Solar estimates."""
         return await self.forecast.estimate()
+
+    async def async_handle_get_prediction(self, call: ServiceCall):
+        # set_temp = call.data.get("temperature")
+        # climate = call.data.get("climate")
+
+        if self.data is None or not isinstance(self.data, Estimate):
+            _LOGGER.error("No data yet")
+            return {}
+
+        estimate_info: Estimate = self.data
+        return {dt.isoformat(): value for dt, value in estimate_info.watts.items()}

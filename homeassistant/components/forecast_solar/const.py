@@ -14,3 +14,5 @@ CONF_DAMPING = "damping"
 CONF_DAMPING_MORNING = "damping_morning"
 CONF_DAMPING_EVENING = "damping_evening"
 CONF_INVERTER_SIZE = "inverter_size"
+
+SERVICE_NAME = "get_estimation"
